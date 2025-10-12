@@ -83,4 +83,76 @@ public readonly struct PackingVector
     {
         return new PackingVector(doubles);
     }
+
+
+
+
+
+
+
+
+
+
+
+    public static PackingVector operator +(PackingVector a, PackingVector b)
+    {
+        if (a.Count != b.Count)
+            throw new InvalidOperationException("Vector dimensions must match.");
+
+        var result = new double[a.Count];
+        for (int i = 0; i < a.Count; i++)
+        {
+            result[i] = a[i] + b[i];
+        }
+        return new PackingVector(result);
+    }
+
+    public static PackingVector operator -(PackingVector a, PackingVector b)
+    {
+        if (a.Count != b.Count)
+            throw new InvalidOperationException("Vector dimensions must match.");
+
+        var result = new double[a.Count];
+        for (int i = 0; i < a.Count; i++)
+        {
+            result[i] = a[i] - b[i];
+        }
+        return new PackingVector(result);
+    }
+
+    public static PackingVector operator *(PackingVector a, int k)
+    {
+        var result = new double[a.Count];
+        for (int i = 0; i < a.Count; i++)
+        {
+            result[i] = a[i] * k;
+        }
+        return new PackingVector(result);
+    }
+
+
+    public static PackingVector operator *(int k, PackingVector a)
+    {
+        return a * k;
+
+    }
+
+    public static PackingVector operator *(PackingVector a, double k)
+    {
+        var result = new double[a.Count];
+        for (int i = 0; i < a.Count; i++)
+        {
+            result[i] = a[i] * k;
+        }
+        return new PackingVector(result);
+    }
+
+
+    public static PackingVector operator *(double k, PackingVector a)
+    {
+        return a * k;
+
+    }
+
+
 }

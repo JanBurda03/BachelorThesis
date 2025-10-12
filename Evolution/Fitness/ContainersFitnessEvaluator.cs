@@ -13,4 +13,6 @@
         }
         return currentMin + containers.Count;
     }
+
+    public static bool Minimizing = true;
 }

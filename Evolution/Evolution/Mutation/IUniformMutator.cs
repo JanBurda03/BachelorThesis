@@ -1,4 +1,4 @@
-﻿public interface IUniformMutator<T>
+﻿public interface IUniformCrossover<T>
 {
-    public T Mutate(T a, T b);
+    public T Crossover(T a, T b);
 }

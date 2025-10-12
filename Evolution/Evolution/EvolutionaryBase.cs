@@ -15,23 +15,24 @@ public abstract class EvolutionaryBase<T> : IEvolutionary<T>
     protected readonly IMultipleFitnessEvaluator<T> _fitnessEvaluator;
 
 
-    public EvolutionaryBase(IReadOnlyList<T> initialPopulation, IMultipleFitnessEvaluator<T> fitnessEvaluator, bool minimizing, IEvolutionData<T>? data = null, double? hardStop = null)
+    public EvolutionaryBase(IReadOnlyList<T> initialPopulation, IMultipleFitnessEvaluator<T> fitnessEvaluator, EvolutionaryAlgorithmSetting setting, IEvolutionData<T>? data = null)
     {
         _fitnessEvaluator = fitnessEvaluator;
         CurrentGenerationPopulation = initialPopulation;
 
         CurrentGeneration = 0;
-        _fitnessComparer = new FitnessComparer<double>(minimizing);
+        _fitnessComparer = new FitnessComparer<double>(setting.Minimizing);
 
         // class for statistical purposes (for example getting data for purpose of graphical representation of the best individual in every generation)
-        _data = data ?? new ConsoleOnlyEvolutionData<T>();
-        _hardStop = hardStop;
+        _data = data ?? new EmptyEvolutionData<T>();
+        _hardStop = setting.HardStop;
 
 
         // evaluation of generation 0
         CurrentGenerationFitness = fitnessEvaluator.EvaluateFitnesses(initialPopulation);
 
         GlobalBest = FindGenerationBestIndividual();
+        CurrentGenerationBest = GlobalBest;
 
 
     }

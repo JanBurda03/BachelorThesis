@@ -1,4 +1,5 @@
-﻿public readonly record struct PackingVectorCell:IComparable<PackingVectorCell>
+﻿
+public readonly record struct PackingVectorCell:IComparable<PackingVectorCell>
 {
     private const int MaxValue = ushort.MaxValue; // 65535
     private readonly ushort _value;
@@ -21,4 +22,45 @@
     public static implicit operator double(PackingVectorCell v) => v.ToDouble();
     // conversion from double to packing vector must always be explicit because of the constaint of the number being between 0 and 1
     public static explicit operator PackingVectorCell(double d) => new PackingVectorCell(d);
+
+
+
+
+    public static PackingVectorCell operator +(PackingVectorCell a, PackingVectorCell b)
+    {
+        double result = a.ToDouble() + b.ToDouble();
+        result = Math.Min(Math.Max(result, 0.0), 0.999999); 
+        return new PackingVectorCell(result);
+    }
+
+    public static PackingVectorCell operator -(PackingVectorCell a, PackingVectorCell b)
+    {
+        double result = a.ToDouble() - b.ToDouble();
+        result = Math.Min(Math.Max(result, 0.0), 0.999999);
+        return new PackingVectorCell(result);
+    }
+
+    public static PackingVectorCell operator *(PackingVectorCell a, int k)
+    {
+        double result = a.ToDouble() * k;
+        result = Math.Min(Math.Max(result, 0.0), 0.999999);
+        return new PackingVectorCell(result);
+    }
+
+    public static PackingVectorCell operator *(int k, PackingVectorCell a)
+    {
+        return a * k;
+    }
+
+    public static PackingVectorCell operator *(PackingVectorCell a, double k)
+    {
+        double result = a.ToDouble() * k;
+        result = Math.Min(Math.Max(result, 0.0), 0.999999);
+        return new PackingVectorCell(result);
+    }
+
+    public static PackingVectorCell operator *(double k, PackingVectorCell a)
+    {
+        return a * k;
+    }
 }

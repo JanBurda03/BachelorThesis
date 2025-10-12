@@ -5,17 +5,23 @@ public static class EvolutionProgram
 
     public static IReadOnlyList<ContainerData> Run(ProgramSetting setting, PackingInput packingInput)
     {
-        var initialPopulation = CreateInitialPopulation(packingInput, setting.PackingSetting, setting.NumberOfIndividuals);
+        var initialPopulation = CreateInitialPopulation(packingInput, setting.PackingSetting, setting.EvolutionSetting.NumberOfIndividuals);
         var evaluator = PackingVectorFitnessEvaluator.Create(packingInput, setting.PackingSetting);
 
-        double stopValue = packingInput.GetLowerBound() + 1;
-        var evolutionary = EvolutionaryAlgorithms.GetEvolutionaryAlgorithm(setting.AlgorithmName, initialPopulation, evaluator, null, stopValue);
-        evolutionary.Evolve(setting.NumberOfGenerations);
+        var evolutionStatistics = new EvolutionStatistics<PackingVector>();
+
+        var evolutionary = EvolutionaryAlgorithms.GetEvolutionaryAlgorithm(setting.EvolutionSetting.AlgorithmName, initialPopulation, evaluator, setting.EvolutionAlgorithmSetting, evolutionStatistics);
+
+
+        evolutionary.Evolve(setting.EvolutionSetting.NumberOfGenerations);
         var best = evolutionary.GlobalBest.individual;
 
         var solution = PackingProgram.Solve(best, packingInput, setting.PackingSetting);
 
         PackingValidityChecker(solution);
+
+        evolutionStatistics.Save(setting.EvolutionSetting.EvolutionStatisticsJSON);
+
         return solution;
     }
   
