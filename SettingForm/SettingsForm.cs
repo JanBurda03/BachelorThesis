@@ -3,16 +3,27 @@ public class SettingsForm : Form
 {
     private TextBox sourceJsonTextBox;
     private TextBox outputJsonTextBox;
+    private TextBox evolutionStatisticsJsonTextBox;
+
     private CheckedListBox placementHeuristicsCheckedListBox;
+
+    private CheckBox showEvolutionGraphCheckBox;
     private CheckBox allowRotationsCheckBox;
+
     private ComboBox packingOrderComboBox;
     private ComboBox algorithmComboBox;
+
     private NumericUpDown numberOfIndividualsNumeric;
     private NumericUpDown numberOfGenerationsNumeric;
+    private NumericUpDown numberOfPOHIndividualsNumeric;
+
     private Button okButton;
     private Button cancelButton;
 
-    public ProgramSetting ProgramSetting { get; private set; }
+
+    public IOSetting IOSetting { get; private set; }
+    public PackingSetting PackingSetting { get; private set; }
+    public EvolutionSetting EvolutionSetting { get; private set; }
 
     public SettingsForm()
     {
@@ -24,36 +35,7 @@ public class SettingsForm : Form
         InitializeComponents();
 
 
-        BackColor = Color.RebeccaPurple;
-
-        foreach (Control ctrl in this.Controls)
-        {
-
-            if (ctrl is Label)
-            {
-                ctrl.ForeColor = Color.White;
-            }
-
-            else if (ctrl is Button btn)
-            {
-                btn.BackColor = Color.ForestGreen;
-                btn.ForeColor = Color.White;
-                btn.FlatStyle = FlatStyle.Flat;
-            }
-
-            else if (ctrl is ComboBox cmb)
-            {
-                cmb.BackColor = Color.White;
-                cmb.ForeColor = Color.Black;
-                cmb.FlatStyle = FlatStyle.Flat;
-            }
-
-
-            else if (ctrl is CheckBox cb)
-            {
-                cb.ForeColor = Color.White;
-            }
-        }
+        WindowDesign.SetDesign(this);
     }
 
     private void InitializeComponents()
@@ -64,7 +46,8 @@ public class SettingsForm : Form
         int spacing = 30;
 
         AddSourceJSON();
-        AddOutputJSON();
+        outputJsonTextBox = AddOutputJSON("Outpot JSON:", "output.json");
+        evolutionStatisticsJsonTextBox = AddOutputJSON("Evolution Statistics JSON:", "evolutionStatistics.json");
 
         // Placement heuristics
         AddLabel("Placement Heuristics:", 10, top, labelWidth);
@@ -76,6 +59,7 @@ public class SettingsForm : Form
             Height = 80
         };
         placementHeuristicsCheckedListBox.Items.AddRange(PlacementHeuristics.PlacementHeuristicsList.ToArray());
+        placementHeuristicsCheckedListBox.SetItemChecked(0, true);
         Controls.Add(placementHeuristicsCheckedListBox);
         top += 90;
 
@@ -92,32 +76,30 @@ public class SettingsForm : Form
         top += spacing;
 
 
-        // Use NON-EVOL Heuristics
-        var useNonEvolutionaryCheckBox = new CheckBox
+
+        // Graph
+        showEvolutionGraphCheckBox = new CheckBox
         {
             Left = 200,
             Top = top,
-            Text = "Use Non-Evolutionary Packing Order Heuristics",
+            Text = "Show Evolution Graph",
             AutoSize = true,
             Checked = false
         };
-        useNonEvolutionaryCheckBox.CheckedChanged += (s, e) =>
-        {
-            packingOrderComboBox.Enabled = useNonEvolutionaryCheckBox.Checked;
-        };
-        this.Controls.Add(useNonEvolutionaryCheckBox);
+        this.Controls.Add(showEvolutionGraphCheckBox);
         top += spacing;
 
         // Packing order heuristic
+        AddLabel("Packing Order Heuristics:", 10, top, labelWidth);
         packingOrderComboBox = new ComboBox
         {
             Left = 200,
             Top = top,
             Width = controlWidth,
-            Enabled = false,
             DropDownStyle = ComboBoxStyle.DropDownList
-    };
+        };
         packingOrderComboBox.Items.AddRange(OrderHeuristics.OrderHeuristicsList.ToArray());
+        packingOrderComboBox.SelectedIndex = 0;
         this.Controls.Add(packingOrderComboBox);
         top += spacing;
 
@@ -129,7 +111,7 @@ public class SettingsForm : Form
             Left = 200,
             Top = top,
             Width = controlWidth,
-            DropDownStyle = ComboBoxStyle.DropDownList
+            DropDownStyle = ComboBoxStyle.DropDownList,
         };
         algorithmComboBox.Items.AddRange(EvolutionaryAlgorithms.EvolutionaryAlgorithmsArray);
         algorithmComboBox.SelectedIndex = 0;
@@ -162,7 +144,33 @@ public class SettingsForm : Form
             Value = 100
         };
         Controls.Add(numberOfGenerationsNumeric);
+        top += spacing;
+
+
+
+        AddLabel("Number of POH Individuals:", 10, top, labelWidth);
+        numberOfPOHIndividualsNumeric = new NumericUpDown
+        {
+            Left = 200,
+            Top = top,
+            Width = 100,
+            Minimum = 0,
+            Maximum = 100000,
+            Value = 0,
+
+        };
+        Controls.Add(numberOfPOHIndividualsNumeric);
         top += spacing + 10;
+
+
+
+
+
+
+
+
+
+
 
         // OK Button
         okButton = new Button
@@ -187,6 +195,7 @@ public class SettingsForm : Form
         Controls.Add(cancelButton);
 
 
+        
 
 
 
@@ -225,15 +234,22 @@ public class SettingsForm : Form
         }
 
 
-        void AddOutputJSON()
+        
+
+        TextBox AddOutputJSON(string text, string defaultName)
         {
-            AddLabel("Output JSON:", 10, top, labelWidth);
-            outputJsonTextBox = new TextBox
+            string defaultPath = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            defaultName);
+
+            AddLabel(text, 10, top, labelWidth);
+            TextBox tb = new TextBox
             {
                 Left = 200,
                 Top = top,
                 Width = controlWidth - 90,
-                ReadOnly = true
+                ReadOnly = true,
+                Text = defaultPath
             };
             var browseOutputButton = new Button
             {
@@ -251,13 +267,16 @@ public class SettingsForm : Form
                 };
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
-                    outputJsonTextBox.Text = sfd.FileName;
+                    tb.Text = sfd.FileName;
                 }
             };
-            Controls.Add(outputJsonTextBox);
+            Controls.Add(tb);
             Controls.Add(browseOutputButton);
             top += spacing;
+            return tb;
         }
+
+        
     }
 
     private void AddLabel(string text, int left, int top, int width)
@@ -281,20 +300,37 @@ public class SettingsForm : Form
             return;
         }
 
+        
 
-        var selectedPlacementHeuristics = placementHeuristicsCheckedListBox.CheckedItems.Cast<string>().ToArray();
-        var allowRotations = allowRotationsCheckBox.Checked;
-        var selectedPackingOrderHeuristic = packingOrderComboBox.Enabled ? packingOrderComboBox.SelectedItem?.ToString() : null;
+ 
+
+        // IO setting
+        IOSetting = new IOSetting(sourceJsonTextBox.Text, outputJsonTextBox.Text);
 
 
-        ProgramSetting = new ProgramSetting(
-            sourceJsonTextBox.Text,
-            outputJsonTextBox.Text,
-            new PackingSetting(selectedPlacementHeuristics, allowRotations, selectedPackingOrderHeuristic),
-            algorithmComboBox.SelectedItem.ToString(),
-            (int)numberOfIndividualsNumeric.Value,
-            (int)numberOfGenerationsNumeric.Value
-            );
+
+
+        // evolution setting
+        string algorithmName = algorithmComboBox.SelectedItem.ToString();
+
+        int numberOfIndividuals = (int)numberOfIndividualsNumeric.Value;
+        int numberOfGenerations = (int)numberOfGenerationsNumeric.Value;
+
+        int numberOfPOHIndividuals = (int)numberOfPOHIndividualsNumeric.Value;
+        string selectedPackingOrderHeuristic = packingOrderComboBox.SelectedItem.ToString();
+
+        bool showEvolutionGraph = showEvolutionGraphCheckBox.Checked;
+        
+        EvolutionSetting = new EvolutionSetting(algorithmName, numberOfIndividuals, numberOfGenerations, numberOfPOHIndividuals, selectedPackingOrderHeuristic, showEvolutionGraph, evolutionStatisticsJsonTextBox.Text);
+
+
+
+        // packing setting
+        bool allowRotations = allowRotationsCheckBox.Checked;
+        string[] selectedPlacementHeuristics = placementHeuristicsCheckedListBox.CheckedItems.Cast<string>().ToArray();
+        string? onlySelectedPackingOrderHeuristics = numberOfIndividuals == numberOfPOHIndividuals ? selectedPackingOrderHeuristic : null;
+        PackingSetting = new PackingSetting(selectedPlacementHeuristics, allowRotations, onlySelectedPackingOrderHeuristics);
+
 
         DialogResult = DialogResult.OK;
         Close();
@@ -314,21 +350,22 @@ public class SettingsForm : Form
             return true;
         }
 
+        if (string.IsNullOrWhiteSpace(evolutionStatisticsJsonTextBox.Text))
+        {
+            MessageBox.Show("Please select an evolution statistics JSON file.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return true;
+        }
+
         if (placementHeuristicsCheckedListBox.CheckedItems.Count == 0)
         {
             MessageBox.Show("Please select at least one placement heuristic.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return true;
         }
 
-        if (algorithmComboBox.SelectedItem == null)
-        {
-            MessageBox.Show("Please select an algorithm.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            return true;
-        }
 
-        if (packingOrderComboBox.Enabled && packingOrderComboBox.SelectedItem == null)
+        if ((int)numberOfIndividualsNumeric.Value <= (int)numberOfPOHIndividualsNumeric.Value)
         {
-            MessageBox.Show("Please select a packing order heuristic.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show("Number of POH indivuals must be less that number of individuals. For using only POH individuals, check the specific box.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return true;
         }
         return false;

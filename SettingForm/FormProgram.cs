@@ -12,12 +12,31 @@
         {
             if (form.ShowDialog() == DialogResult.OK)
             {
-                return form.ProgramSetting;
+                AlgorithmSettingForm algorithmSettingForm;
+                if (AlgorithmSettingsForms.TryGetValue(form.EvolutionSetting.AlgorithmName, out algorithmSettingForm))
+                {
+                    if (algorithmSettingForm.ShowDialog() == DialogResult.OK)
+                    {
+                        return new ProgramSetting(form.IOSetting, form.PackingSetting, form.EvolutionSetting, algorithmSettingForm.EvolutionaryAlgorithmSetting);
+                    }                  
+                    return null;
+                    
+                }
+                else
+                {
+                    throw new Exception();
+                }
             }
-            else
-            {
-                return null;
-            }
+            return null;
+            
         }
     }
+
+    public static Dictionary<string, AlgorithmSettingForm> AlgorithmSettingsForms
+    = new Dictionary<string, AlgorithmSettingForm>
+    {
+        { "Differential Evolution", new DifferentialEvolutionSettingForm() },
+        { "Differential Evolution Triple", new DifferentialEvolutionTripleSettingForm() },
+    };
 }
+

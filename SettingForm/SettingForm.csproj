@@ -12,4 +12,10 @@
     <ProjectReference Include="..\Evolution\Evolution.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="DifferentialEvolutionTripleSettingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>
